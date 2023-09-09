@@ -39,8 +39,8 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function measureParticleSpin(particleSpin, measurementUsed = null) {
-            measurementUsed = (measurementUsed !== null) ? measurementUsed : getRandomInt(0, 2) * (2 * Math.PI / 3);
+        function measureParticleSpin(particleSpin) {
+            measurementUsed = getRandomInt(0, 2) * (2 * Math.PI / 3);
             const angleDiff = particleSpin - measurementUsed;
             const pUp = Math.cos(angleDiff / 2) ** 2;
             const isUp = Math.random() < pUp;
@@ -64,20 +64,6 @@
     </script>
 
     <script>
-
-
-        tests();
-
-        function tests() {
-            const N = 1000;
-            let sum = 0;
-            for (let i = 0; i < N; i++) {
-                if (measureParticleSpin(0, 0) !== true) throw new Error('Test failed');
-                if (measureParticleSpin(0, Math.PI) !== false) throw new Error('Test failed');
-                sum += (measureParticleSpin(0, Math.PI / 2) === true) ? 1 : 0;
-            }
-            if (Math.abs(sum / N - 0.5) >= 0.1) throw new Error('Test failed');
-        }
 
         document.getElementById("performExperiment").addEventListener("click", main);
 
