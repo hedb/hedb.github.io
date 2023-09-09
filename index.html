@@ -1,39 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quantum Spin Measurement Simulation</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container">
 
-<html>
-    <head>
-        <script src="https://cdn.jsdelivr.net/gh/ncase/nutshell/nutshell.js"></script>
+    <h1 class="mt-4 mb-4">Quantum Spin Measurement Simulation</h1>
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css">
-        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"
-            onload="renderMathInElement(document.body);"></script>
+    <p class="lead">
+        This simulation mimics the measurement of entangled quantum particles' spins. 
+        Two particles are generated with entangled spins, and each particle's spin is measured.
+        The goal is to observe how often the results of the measurements for both particles align.
+        <br>
+        This simulation is based on the: <a href="https://www.youtube.com/watch?v=7zfnvGXpy-g">Proof of Bell's theorem youtube</a>.
+
+        <br><br>
+        What's odd here which I'm trying to understand is that:<br>
+        1. The entanglement set a hidden variable in place<br>
+        2. The results are as expected according to the quantom theory<br>
+        3. There is obviously no quantum effect here<br>
 
 
-  <script type="text/javascript" async
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-                        
-    </head>
+    </p>
 
+    <button id="performExperiment" class="btn btn-primary mb-4">Perform Experiment</button>
 
-    <body>
+    <div id="resultDiv" class="alert alert-info"></div>
 
+    <label for="codeArea" class="form-label mt-4"><b>Code:</b> (saving you the view source. it's a gpt transcribing from python=>hence the main) </label>
+    <textarea id="codeArea" class="form-control" rows="20" readonly></textarea>
+
+    <script id="mainScript">
         
-        From <a href="https://en.wikipedia.org/wiki/CHSH_inequality#Statement">:Wikipedia</a> 
 
-        <p>
-            The usual form of the CHSH inequality is <br/>
-            
-            {\displaystyle |S|\leq 2,}	<br/>
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
 
-            {\displaystyle S=E(a,b)-E\left(a,b'\right)+E\left(a',b\right)+E\left(a',b'\right).} <br/>
-        </p>
+        function measureParticleSpin(particleSpin, measurementUsed = null) {
+            measurementUsed = (measurementUsed !== null) ? measurementUsed : getRandomInt(0, 2) * (2 * Math.PI / 3);
+            const angleDiff = particleSpin - measurementUsed;
+            const pUp = Math.cos(angleDiff / 2) ** 2;
+            const isUp = Math.random() < pUp;
+            return isUp;
+        }
 
-        <p>
-            Here is an equation: \( |S| \leq 2 \)
-          </p>
+        function main() {
+            const N = 10000;
+            let sum = 0;
+            for (let i = 0; i < N; i++) {
+                const entangledParticles = [Math.random() * 2 * Math.PI];
+                entangledParticles.push(2 * Math.PI - entangledParticles[0]);
 
-          
+                const aliceResult = measureParticleSpin(entangledParticles[0]);
+                const bobResult = measureParticleSpin(entangledParticles[1]);
+                sum += (aliceResult === bobResult) ? 1 : 0;
+            }
+            document.getElementById("resultDiv").innerText = `N=${N}, sum=${sum}, sum/N=${sum / N}`;
+        }
 
-    </body>
+    </script>
+
+    <script>
+
+
+        tests();
+
+        function tests() {
+            const N = 1000;
+            let sum = 0;
+            for (let i = 0; i < N; i++) {
+                if (measureParticleSpin(0, 0) !== true) throw new Error('Test failed');
+                if (measureParticleSpin(0, Math.PI) !== false) throw new Error('Test failed');
+                sum += (measureParticleSpin(0, Math.PI / 2) === true) ? 1 : 0;
+            }
+            if (Math.abs(sum / N - 0.5) >= 0.1) throw new Error('Test failed');
+        }
+
+        document.getElementById("performExperiment").addEventListener("click", main);
+
+        // Populate the textarea with the JS code
+        const scriptElement = document.getElementById('mainScript');
+        document.getElementById("codeArea").textContent = scriptElement.textContent;
+    </script>
+
+</body>
 </html>
