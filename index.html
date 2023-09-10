@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <title>Quantum Spin Measurement Simulation</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .codeAreaClass {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+
 </head>
 <body class="container">
 
@@ -39,14 +48,46 @@
     <div id="resultDiv" class="alert alert-info"></div>
 
     <label for="codeArea" class="form-label mt-4"><b>Code:</b> (saving you the view source. it's a gpt transcribing from python=>hence the main) </label>
-    <textarea id="codeArea" class="form-control" rows="20" readonly></textarea>
+    <pre id="codeArea" class="codeAreaClass" contenteditable="true"></pre>
+
+
+    <script id="common_utils">
+
+function colorLines(codeText) {
+  // Split the text into lines
+  const lines = codeText.split("\n");
+  let output = "";
+  
+  let colorNextLine = false;
+  
+  // Loop through each line
+  lines.forEach(line => {
+    // Check if the line contains the comment "// red line"
+    if (line.trim() === "// red line") {
+      colorNextLine = true;
+    } else {
+      // If colorNextLine is true, wrap the line in a span with a style
+      if (colorNextLine) {
+        output += `<span style="color: red;">${line}</span>\n`;
+        colorNextLine = false;
+      } else {
+        output += `${line}\n`;
+      }
+    }
+  });
+  
+  return output;
+}
+
+
+    </script>
 
     <script id="mainScript">
         
 
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
+        }   
 
         function measureParticleSpin(particleSpin) {
             // Randomize between the axis seperated by 120 degrees
@@ -55,6 +96,7 @@
             const angleDiff = particleSpin - measurementUsed;
             // The probability of the particle to be measured as Up is cos^2(angleDiff / 2)
             const probabailty_Up = Math.cos(angleDiff / 2) ** 2;
+            // red line
             const isUp = Math.random() < probabailty_Up;
             return [measurementUsed,isUp];
         }
@@ -66,8 +108,9 @@
             for (let i = 0; i < N; i++) {
                 const entangledParticles = [Math.random() * 2 * Math.PI];
                 entangledParticles.push( (entangledParticles[0] + Math.PI) % (2 * Math.PI ) );
-                                
+                // red line
                 const aliceResult = measureParticleSpin(entangledParticles[0]);
+                // red line
                 const bobResult = measureParticleSpin(entangledParticles[1]);
                 sum_alligned += (aliceResult[1] === bobResult[1]) ? 1 : 0;
                 sum_alligned_on_the_same_axis += ((aliceResult[0] === bobResult[0]) && (aliceResult[1] === bobResult[1])) ? 1 : 0;
@@ -84,9 +127,11 @@
 
         document.getElementById("performExperiment").addEventListener("click", main);
 
-        // Populate the textarea with the JS code
         const scriptElement = document.getElementById('mainScript');
-        document.getElementById("codeArea").textContent = scriptElement.textContent;
+        let coloredText = colorLines(scriptElement.textContent);
+        document.getElementById("codeArea").innerHTML = coloredText;
+
+
     </script>
 
 
@@ -107,7 +152,9 @@
 <div id="resultDiv2" class="alert alert-info"></div>
 
 <label for="codeArea2" class="form-label mt-4"><b>Code:</b></label>
-<textarea id="codeArea2" class="form-control" rows="20" readonly></textarea>
+<pre id="codeArea2" class="codeAreaClass" contenteditable="true"></pre>
+
+
 
 <script id="mainScript2">
 
@@ -118,6 +165,7 @@
         let angleDiff = Math.abs(particleSpin - measurementUsed);
         angleDiff = Math.min(angleDiff, 2 * Math.PI - angleDiff);
         // Determenistcly collapses in the direction of the measurement
+        // red line
         const isUp = Math.abs(angleDiff) < Math.PI/2;
         return [measurementUsed,isUp];
     }
@@ -129,8 +177,9 @@
         for (let i = 0; i < N; i++) {
             const entangledParticles = [Math.random() * 2 * Math.PI];
             entangledParticles.push( (entangledParticles[0] + Math.PI) % (2 * Math.PI ) );
-                            
+            // red line
             const aliceResult = measureParticleSpin2(entangledParticles[0]);
+            // red line
             const bobResult = measureParticleSpin2(entangledParticles[1]);
             sum_alligned += (aliceResult[1] === bobResult[1]) ? 1 : 0;
             sum_alligned_on_the_same_axis += ((aliceResult[0] === bobResult[0]) && (aliceResult[1] === bobResult[1])) ? 1 : 0;
@@ -152,7 +201,11 @@
 
     // Populate the textarea with the JS code
     const scriptElement2 = document.getElementById('mainScript2');
-    document.getElementById("codeArea2").textContent = scriptElement2.textContent;
+    coloredText = colorLines(scriptElement2.textContent);
+    document.getElementById("codeArea2").innerHTML = coloredText;
+
+
+
 </script>
 
 
@@ -183,7 +236,8 @@
 <div id="resultDiv3" class="alert alert-info"></div>
 
 <label for="codeArea3" class="form-label mt-4"><b>Code:</b></label>
-<textarea id="codeArea3" class="form-control" rows="20" readonly></textarea>
+<pre id="codeArea3" class="codeAreaClass" contenteditable="true"></pre>
+
 
 <script id="mainScript3">
 
@@ -208,9 +262,13 @@
             entangledParticles.push( (entangledParticles[0] + Math.PI) % (2 * Math.PI ) );
                             
             const aliceResult = measureParticleSpin3(entangledParticles[0]);
+            // red line
             // Alice measured the particle, and collapsed the particle to the axis of measurement
+            // red line
             entangledParticles[1] = (aliceResult[1]) ?  
+            // red line
                 (aliceResult[0] + Math.PI) % (2 * Math.PI ):
+            // red line
                 aliceResult[0];                
 
             const bobResult = measureParticleSpin3(entangledParticles[1]);
@@ -229,9 +287,10 @@
 
     document.getElementById("performExperiment3").addEventListener("click", main3);
 
-    // Populate the textarea with the JS code
     const scriptElement3 = document.getElementById('mainScript3');
-    document.getElementById("codeArea3").textContent = scriptElement3.textContent;
+    coloredText = colorLines(scriptElement3.textContent);
+    document.getElementById("codeArea3").innerHTML = coloredText;
+
 </script>
 
 
