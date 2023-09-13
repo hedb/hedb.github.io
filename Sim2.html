@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image and Description Layout</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" async
+            src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <style>
+        /* 1. Open some space from the top */
+        body {
+            margin-top: 50px;
+        }
+
+        /* 2. Vertical centering */
+        .row > div {
+            display: flex;
+            align-items: center;
+        }
+
+        /* 3. Stretch all images to the same proportions */
+        .img-fluid {
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        /* 4. Add borders and background colors */
+        .col-6 {
+            border: 2px solid #ccc;
+            background-color: #f9f9f9;
+            margin: 10px 0;
+        }
+
+        .explanation-text {
+            background-color: #FFF9C4; /* soft yellow */
+            padding: 10px;
+            border-radius: 5px;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .codeAreaClass {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+        }
+
+    </style>
+
+    <script>
+        function init_page() {            
+            var buttons = document.querySelectorAll('.perform-experiment-button');
+            
+            buttons.forEach(function(button) {
+                button.addEventListener('click', wrap_and_run_sim);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded",init_page);
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }   
+
+
+
+
+function wrap_and_run_sim(e) {
+    const resultDivId = this.getAttribute('result_div');
+
+    let resultDiv = document.getElementById(resultDivId);
+    resultDiv.innerHTML = '';
+
+    ['entanglement', 'measurement', 'spooky_action'].forEach((attr, index) => {
+        const functionName = this.getAttribute(`${attr}_function`);
+        const functionText = window[functionName] ? window[functionName].toString() : 'Function not found';
+        const functionDiv = document.createElement('div');
+        const preElement = document.createElement('pre');
+
+        preElement.textContent = functionText; // Set the function text inside the <pre> element
+        functionDiv.innerHTML = `<strong>${attr.replace(/_/g, ' ')}:</strong>`;
+        functionDiv.appendChild(preElement); // Append the <pre> element to the div
+
+        resultDiv.appendChild(functionDiv);
+
+        // Dynamically set the current standard function.
+        window[`${attr}_function`] = window[functionName];
+    });
+    // Run the simulation using the standard functions (assuming run_sim returns the result)
+    const simulationResult = run_sim();    
+    resultDivText = create_result_div(simulationResult);
+    resultDiv.appendChild(resultDivText);
+
+
+    // Fetch and display post simulation explanation
+    const postSimExp = this.getAttribute('post_sim_explenation');
+    if (postSimExp && window[postSimExp]) {
+        const postSimExpDiv = document.createElement('div');
+        postSimExpDiv.innerHTML = window[postSimExp];
+        resultDiv.appendChild(postSimExpDiv);
+    }
+
+    // Run post simulation function if it exists
+    const postSimFuncName = this.getAttribute('post_sim_func');
+    if (postSimFuncName && typeof window[postSimFuncName] === 'function') {
+        window[postSimFuncName]();
+    }
+}
+
+function create_result_div(simulationResult) {
+    // Create a div to hold the results
+    const resultDivText = document.createElement('div');
+    resultDivText.innerHTML = '<strong>Simulation Result:</strong>';
+    
+    // Add styling for border and background color
+    resultDivText.style.border = '2px solid #333';  // Change border color as needed
+    resultDivText.style.backgroundColor = '#f2f2f2';  // Change background color as needed
+    resultDivText.style.padding = '10px';
+    resultDivText.style.margin = '10px 0';
+
+    // Create a table to display the results
+    const table = document.createElement('table');
+    for (const key in simulationResult) {
+        const row = document.createElement('tr');
+        const keyCell = document.createElement('td');
+        const valueCell = document.createElement('td');
+
+        keyCell.textContent = key + ':';
+        valueCell.textContent = simulationResult[key];
+
+        row.appendChild(keyCell);
+        row.appendChild(valueCell);
+        table.appendChild(row);
+    }
+
+    // Append the table to the result div
+    resultDivText.appendChild(table);
+    
+    return resultDivText;
+}
+
+
+function run_sim(e) {
+    const N = 100000;
+    let sum_alligned = 0;
+    let sum_alligned_on_the_same_axis = 0;
+    for (let i = 0; i < N; i++) {
+        const entangledParticles = entanglement_function();
+        const aliceResult = measurement_function(entangledParticles[0]);
+        spooky_action_function(entangledParticles);
+        const bobResult = measurement_function(entangledParticles[1]);
+        sum_alligned += (aliceResult[1] === bobResult[1]) ? 1 : 0;
+        sum_alligned_on_the_same_axis += ((aliceResult[0] === bobResult[0]) && (aliceResult[1] === bobResult[1])) ? 1 : 0;
+
+    }
+
+    let result = 
+    { 
+        'N': new Intl.NumberFormat().format(N),
+        'Aligned': `${(sum_alligned / N * 100).toFixed(1)}% (${new Intl.NumberFormat().format(sum_alligned)})`,
+        'Not properly entangled (Aligned on the same axis)': `${(sum_alligned_on_the_same_axis / N * 100).toFixed(1)}% (${new Intl.NumberFormat().format(sum_alligned_on_the_same_axis)})`
+    }
+    return result;
+}
+</script>
+
+<script>
+
+    function entanglement_spin_setting() {        
+            const particle1 = Math.random() * 2 * Math.PI;
+            const particle2 = (particle1 + Math.PI) % (2 * Math.PI );
+            return [particle1, particle2];
+    }
+    function measurement_spin_collapsing(particleSpin) {
+            // Randomize between the axis seperated by 120 degrees
+            measurementUsed = getRandomInt(0, 2) * (2 * Math.PI / 3);
+            // calculating the angle difference between the measurement and the particle spin
+            const angleDiff = particleSpin - measurementUsed;
+            // The probability of the particle to be measured as Up is cos^2(angleDiff / 2)
+            const probabailty_Up = Math.cos(angleDiff / 2) ** 2;
+            // red line
+            const isUp = Math.random() < probabailty_Up;
+            return [measurementUsed,isUp];
+    }
+    function spooky_action_none(entangledParticles) {
+        // Do nothing
+    }
+
+    window['post_sim1_explenation'] = `" As we can see the allignment in general looks good, as in Reality about 50% of the time the particles are alligned.
+    <br/>However, when we look at the allignment when the particles are measured on the same axis, we see that the allignment is not 100%."
+    <br/> Let's see if we can improve that through some spooky action at a distance.`;
+
+</script>
+
+
+
+</head>
+<body class="container">
+    <h1 id="top">Let's design a universe</h1>
+    <p class="explanation-text">Specifically, let's focus on the Bell thought experiment, let's make out universe behave like reality.<br/>
+        ( let's see is we are living in an elegant simulation or a messy one )
+    </p>
+    <div>
+        <img src="images/experiment_flow.png" alt="Experiment Flow">
+    </div>
+    
+    <p class="explanation-text" >There are actually 3 pivotal moments to consider when we think about the Bell thought experiment.</p>
+    
+    <div class="row">
+        <div class="col-6">
+            <img src="images/entanglement.png" alt="Entanglement" class="img-fluid">
+        </div>
+        <div class="col-6">
+            <p>The particles are bounded together and can conspire together a shared hidden variable</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+            <img src="images/measurement.png" alt="Measurement" class="img-fluid">
+        </div>
+        <div class="col-6">
+            <p>Description for measurement image.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+            <img src="images/spooky_action.png" alt="Spooky Action" class="img-fluid">
+        </div>
+        <div class="col-6">
+            <p>Description for spooky action image.</p>
+        </div>
+    </div>
+
+
+    <p class="explanation-text">
+        Let's start with the simplest option.
+      
+      <ul >
+        <li><b>Entanglement:</b> will just set the particle spins to be opposite on a random axis.</li>
+        <li><b>Measurement:</b> Device is randomized to be either \( 0, \frac{2}{3}\pi, \frac{4}{3}\pi \) 
+        and using standard spin collapsing: \( \cos^2\left( \frac{\text{particle spin angle} - \text{measurement angle}}{2} \right) \)</li>
+        <li><b>Spooky action:</b> Let's see if we can do without it.</li>
+      </ul>
+    
+    </p>
+
+      <p class="explanation-text">
+        We will measure two metrics:
+        <ul>
+          <li><b>Alligned % : </b>The number of times the particles are measured to be aligned. (Both spins are up or both spins are down)</li>
+          <li><b>Entanglement flakiness:</b> The number of times the particles are measured to be aligned <b>when they are measured on the same axis.</b></li>
+        </ul>
+      </p>
+    
+      <script>
+      </script>
+      
+      <button id="performExperiment1" class="btn btn-primary mb-4 perform-experiment-button" 
+        result_div="resultDiv1"
+        entanglement_function="entanglement_spin_setting"
+        measurement_function="measurement_spin_collapsing"
+        spooky_action_function="spooky_action_none"
+
+        post_sim_explenation="post_sim1_explenation"
+        post_sim_func="post_sim1_func"
+
+        > Run Simulation</button>
+
+      
+      <div id="resultDiv1" class="alert alert-info"></div>
+
+
+
+
+    <a href="#top" class="small">Back to top</a>
+</body>
+</html>
