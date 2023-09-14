@@ -42,20 +42,38 @@
             padding-left: 0;
         }
 
-        .codeAreaClass {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
+        .code-section {
+            background-color: #f3f4f6; /* Light gray */
+            border-radius: 8px;         /* Rounded corners */
+            padding: 10px;              /* Padding */
+            margin-bottom: 20px;        /* Margin between sections */
         }
+
+        .code-section div,
+        .code-section textarea {
+            margin-bottom: 5px;         /* Spacing between elements */
+        }
+
+        textarea {
+            border: none;
+            outline: none;
+            resize: none;               /* Disallow resizing */
+        }
+
     </style>
 
     <script>
         function init_page() {
             var buttons = document.querySelectorAll('.perform-experiment-button');
-
             buttons.forEach(function (button) {
                 button.addEventListener('click', wrap_and_run_sim);
             });
+
+            buttons = document.querySelectorAll('.playground-fill-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', fill_playground_values);
+            });
+
         }
 
         document.addEventListener("DOMContentLoaded", init_page);
@@ -72,6 +90,11 @@
 
             let resultDiv = document.getElementById(resultDivId);
             resultDiv.innerHTML = '';
+
+            const custom_pre_sim_function_name = this.getAttribute('custom_pre_sim_function');
+            if (custom_pre_sim_function_name && typeof window[custom_pre_sim_function_name] === 'function') {
+                window[custom_pre_sim_function_name]();
+            }
 
             ['entanglement', 'measurement', 'spooky_action'].forEach((attr, index) => {
                 const functionName = this.getAttribute(`${attr}_function`);
@@ -208,6 +231,57 @@
             entangledParticles[1]['spin'] = (entangledParticles[0]['spin'] + Math.PI) % (2 * Math.PI);
         }
 
+
+        function extract_ad_hoc_functions_from_textarea() {
+            try {
+                // Extract content from textareas
+                const entanglementCode = document.getElementById("entanglementTextarea").value;
+                const measurementCode = document.getElementById("measurementTextarea").value;
+                const spookyActionCode = document.getElementById("spookyActionTextarea").value;
+
+                // Create functions from textarea content
+                // The 'new Function' constructor expects the parameters as the first argument 
+                // and the function body as the second argument.
+                window.entanglement_ad_hoc = new Function("", entanglementCode);
+                window.measurement_ad_hoc = new Function('particle', measurementCode);
+                window.spooky_action_ad_hoc = new Function('particles', spookyActionCode);
+
+            } catch (e) {
+                // Handle errors like syntax error in user input
+                console.error("Error in creating functions: ", e);
+                alert("There was an error in your custom functions. Please check the console for details.");
+            }
+        }
+
+        function getFunctionBody(func) {
+            const funcAsString = func.toString();
+            const startBody = funcAsString.indexOf('{') + 1;
+            const endBody = funcAsString.lastIndexOf('}');
+            return funcAsString.substring(startBody, endBody).trim();
+        }
+
+        function fill_playground_values(event) {
+            const button = event.currentTarget;
+
+            // Fetch the function names from the button attributes
+            const entanglementFunctionName = button.getAttribute('entanglement_function');
+            const measurementFunctionName = button.getAttribute('measurement_function');
+            const spookyActionFunctionName = button.getAttribute('spooky_action_function');
+
+            // Get the actual code from the window object
+            const entanglementFunctionCode = window[entanglementFunctionName] ? getFunctionBody(window[entanglementFunctionName]) : '';
+            const measurementFunctionCode = window[measurementFunctionName] ? getFunctionBody(window[measurementFunctionName]) : '';
+            const spookyActionFunctionCode = window[spookyActionFunctionName] ? getFunctionBody(window[spookyActionFunctionName]) : '';
+
+            // Find the textareas and fill them
+            document.getElementById('entanglementTextarea').value = entanglementFunctionCode;
+            document.getElementById('measurementTextarea').value = measurementFunctionCode;
+            document.getElementById('spookyActionTextarea').value = spookyActionFunctionCode;
+        }
+
+
+
+
         window['post_sim1_explenation'] = `As we can see the allignment in general looks good, matches reality with 50% of the time the particles are alligned.
     <br/>However, when we look at the allignment when the particles are measured on the same axis, we would expect 0% and instead we get ~8%.
     <br/> Let's see if we can improve that through some spooky action at a distance.
@@ -230,6 +304,17 @@
             document.getElementById('after_sim_2').style.display = 'block';
         }
 
+        window['post_sim3_explenation'] = `
+So we added a hidden variable that will make the collapsing determinstic based on the spin angle.
+<BR/>and we get the expected result of 0% allignment when the particles are measured on the same axis.             
+<BR/> Alas, we don't get now the 50% allignment in general. 
+<BR/> we get ~44% (4/9) which is SAD 
+<BR/> Can we get close to 100% entanglement, 50% allignment and no non local spooky action?
+`;
+
+        post_sim3_func = function () {
+            document.getElementById('after_sim_3').style.display = 'block';
+        }
     </script>
 
 
@@ -335,6 +420,56 @@
             <div id="resultDiv3" class="alert alert-info"></div>
 
 
+            <div id="after_sim_3" style="display: none;">
+
+
+
+ <button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
+ entanglement_function="entanglement_spin_and_hidden_variable_setting"
+measurement_function="measurement_spin_collapsing_according_to_hidden_variable" 
+spooky_action_function="spooky_action_none"
+> Start playing from Simulation 3 state</button>
+
+
+
+                <div style="width: 100%;">
+                    <h4>Entanglement Function</h4>
+                    <div class="code-section">
+                        <div>function entanglement() { // return an array of 2 particles. particle is a dict with 'spin' property</div>
+                        <textarea id="entanglementTextarea" rows="5" style="width: 100%;"></textarea>
+                        <div>}</div>
+                    </div>
+
+                    <h4>Measurement Function</h4>
+                    <div class="code-section">
+                        <div>function measurement(particle) { // particle is a dict with 'spin' property</div>
+                        <textarea id="measurementTextarea" rows="5" style="width: 100%;"></textarea>
+                        <div>}</div>
+                    </div>
+                  
+                    <h4>Spooky Action Function</h4>
+                    <div class="code-section">
+                        <div>function spooky_action(particles) { //  recieves the two particles </div>
+                        <textarea id="spookyActionTextarea" rows="5" style="width: 100%;"></textarea>
+                        <div>}</div>
+                    </div>
+                  </div>
+                                  
+
+                <button id="performExperiment4" class="btn btn-primary mb-4 perform-experiment-button"
+                    result_div="resultDiv4"
+                    custom_pre_sim_function="extract_ad_hoc_functions_from_textarea"
+                    entanglement_function="entanglement_ad_hoc"
+                    measurement_function="measurement_ad_hoc" 
+                    spooky_action_function="spooky_action_ad_hoc"
+                    post_sim_explenation="" post_sim_func=""> 
+                    Run Simulation 4</button>
+    
+    
+                <div id="resultDiv4" class="alert alert-info"></div>
+    
+    
+            </div>
         </div>
     </div>
     <a href="#top" class="small">Back to top</a>
