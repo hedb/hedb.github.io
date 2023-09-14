@@ -60,6 +60,13 @@
             resize: none;               /* Disallow resizing */
         }
 
+        .separator {
+            height: 4px;
+            background-color: #333;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
     </style>
 
     <script>
@@ -76,6 +83,17 @@
 
         }
 
+        function goToPlayground() {
+            // Make elements visible
+            document.getElementById('after_sim_1').style.display = 'block';
+            document.getElementById('after_sim_2').style.display = 'block';
+            document.getElementById('after_sim_3').style.display = 'block';
+
+            // Navigate to playground
+            location.hash = '#playgroundAnchor';
+        }
+
+
         document.addEventListener("DOMContentLoaded", init_page);
 
         function getRandomInt(min, max) {
@@ -87,6 +105,7 @@
 
         function wrap_and_run_sim(e) {
             const resultDivId = this.getAttribute('result_div');
+            const is_print_functions_text = this.getAttribute('avoid_printing_functions') != 'true'
 
             let resultDiv = document.getElementById(resultDivId);
             resultDiv.innerHTML = '';
@@ -106,7 +125,9 @@
                 functionDiv.innerHTML = `<strong>${attr.replace(/_/g, ' ')}:</strong>`;
                 functionDiv.appendChild(preElement); // Append the <pre> element to the div
 
-                resultDiv.appendChild(functionDiv);
+                if (is_print_functions_text) {
+                    resultDiv.appendChild(functionDiv);
+                }
 
                 // Dynamically set the current standard function.
                 window[`${attr}_function`] = window[functionName];
@@ -244,7 +265,7 @@
                 // and the function body as the second argument.
                 window.entanglement_ad_hoc = new Function("", entanglementCode);
                 window.measurement_ad_hoc = new Function('particle', measurementCode);
-                window.spooky_action_ad_hoc = new Function('particles', spookyActionCode);
+                window.spooky_action_ad_hoc = new Function('entangledParticles', spookyActionCode);
 
             } catch (e) {
                 // Handle errors like syntax error in user input
@@ -323,6 +344,8 @@ So we added a hidden variable that will make the collapsing determinstic based o
 
 <body class="container">
     <h1 id="top">Let's design a universe</h1>
+    <a href="javascript:void(0);" onclick="goToPlayground();">Take me straight to the playground</a>
+
     <p class="explanation-text">Specifically, let's focus on the Bell thought experiment, let's make out universe behave
         like reality.<br />
         ( let's see is we are living in an elegant simulation or a messy one )
@@ -423,6 +446,30 @@ So we added a hidden variable that will make the collapsing determinstic based o
             <div id="after_sim_3" style="display: none;">
 
 
+            <a id="playgroundAnchor"></a>
+            <div class="separator"></div>
+    
+            <h1>PLAYGROUND</h1>
+
+
+            
+ <button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
+ entanglement_function="entanglement_spin_setting"
+measurement_function="measurement_spin_collapsing" 
+spooky_action_function="spooky_action_none"
+> Start playing from Simulation 1 state</button>
+
+
+
+<button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
+entanglement_function="entanglement_spin_setting"
+measurement_function="measurement_spin_collapsing" 
+spooky_action_function="spooky_action_spin_resetting"
+> Start playing from Simulation 2 state</button>
+
+
+
+
 
  <button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
  entanglement_function="entanglement_spin_and_hidden_variable_setting"
@@ -462,8 +509,9 @@ spooky_action_function="spooky_action_none"
                     entanglement_function="entanglement_ad_hoc"
                     measurement_function="measurement_ad_hoc" 
                     spooky_action_function="spooky_action_ad_hoc"
+                    avoid_printing_functions = "true" 
                     post_sim_explenation="" post_sim_func=""> 
-                    Run Simulation 4</button>
+                    Run Playground</button>
     
     
                 <div id="resultDiv4" class="alert alert-info"></div>
