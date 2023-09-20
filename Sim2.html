@@ -190,12 +190,14 @@
             const N = 100000;
             let sum_alligned = 0;
             let sum_alligned_on_the_same_axis = 0;
+            let sum_on_the_same_axis = 0;
             for (let i = 0; i < N; i++) {
                 let entangledParticles = entanglement_function();
                 const aliceResult = measurement_function(entangledParticles[0]);
                 spooky_action_function(entangledParticles);
                 const bobResult = measurement_function(entangledParticles[1]);
                 sum_alligned += (aliceResult[1] === bobResult[1]) ? 1 : 0;
+                sum_on_the_same_axis += ((aliceResult[0] === bobResult[0]) ) ? 1 : 0;
                 sum_alligned_on_the_same_axis += ((aliceResult[0] === bobResult[0]) && (aliceResult[1] === bobResult[1])) ? 1 : 0;
 
             }
@@ -203,8 +205,8 @@
             let result =
             {
                 'N': new Intl.NumberFormat().format(N),
-                'Aligned': `${(sum_alligned / N * 100).toFixed(1)}% (${new Intl.NumberFormat().format(sum_alligned)})`,
-                'Not properly entangled (Aligned on the same axis)': `${(sum_alligned_on_the_same_axis / N * 100).toFixed(1)}% (${new Intl.NumberFormat().format(sum_alligned_on_the_same_axis)})`
+                'Aligned': `${(sum_alligned / N * 100).toFixed(1)}%   (${new Intl.NumberFormat().format(sum_alligned)} / ${new Intl.NumberFormat().format(N)})`,
+                'Not properly entangled (Aligned on the same axis)' :  `${(sum_alligned_on_the_same_axis / sum_on_the_same_axis * 100).toFixed(1)}%   (${new Intl.NumberFormat().format(sum_alligned_on_the_same_axis)} / ${new Intl.NumberFormat().format(sum_on_the_same_axis)})`
             }
             return result;
         }
