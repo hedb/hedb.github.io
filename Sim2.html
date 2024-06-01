@@ -364,7 +364,19 @@ So we added a hidden variable that will make the collapsing determinstic based o
             <img src="images/entanglement.png" alt="Entanglement" class="img-fluid">
         </div>
         <div class="col-6">
-            <p>The particles are bounded together and can conspire together a shared hidden variable</p>
+            
+    <ul>
+        <li>
+            <strong>Option 1 / Current assumption / Reality(?):</strong>
+            <br/>
+            The particles enter a shared super-position. Once it collapses for one, it will collapse for the other as well (opposite direction).
+        </li>
+        <li>
+            <strong>Option 2 / Einstein's wish:</strong>
+            <br/>
+            The particles enter a deterministic state (opposite direction) but it's hidden from us.
+        </li>
+    </ul>
         </div>
     </div>
 
@@ -373,7 +385,14 @@ So we added a hidden variable that will make the collapsing determinstic based o
             <img src="images/measurement.png" alt="Measurement" class="img-fluid">
         </div>
         <div class="col-6">
-            <p>Description for measurement image.</p>
+            <p>We randomize a direction and measure the particle spin along the direction we measured.
+                <br/>
+                there is an angle difference between the measurement direction and the particle spin
+                <br/>
+                Current assumption is <br/>
+                <strong>Probabilty of Up</strong> =  \( \cos^2\left( \frac{\text{particle spin angle} - \text{measurement angle}}{2} \right) \)
+                
+            </p>
         </div>
     </div>
 
@@ -382,7 +401,23 @@ So we added a hidden variable that will make the collapsing determinstic based o
             <img src="images/spooky_action.png" alt="Spooky Action" class="img-fluid">
         </div>
         <div class="col-6">
-            <p>Description for spooky action image.</p>
+                     
+    <ul>
+        <li>
+            <strong>super-position:</strong>
+            <br/>
+            In the case we chose shared super-position, we need to add some spooky action at a distance.
+            <br/>
+            meaning, once one particle is measured, the other particle will be measured in the opposite direction.
+        </li>
+        <li>            
+            <strong>hidden valiable:</strong>
+            <br/>
+            In the case we chose deterministic state, nothing needs to be done here.
+            each particles knows well in advance what it's spin will be.
+        </li>
+    </ul>
+
         </div>
     </div>
 
@@ -422,7 +457,7 @@ So we added a hidden variable that will make the collapsing determinstic based o
     <div id="resultDiv1" class="alert alert-info"></div>
 
 
-    <div id="after_sim_1" style="display: none;">
+    <div id="after_sim_1" style="display: block;">
         <button id="performExperiment2" class="btn btn-primary mb-4 perform-experiment-button" result_div="resultDiv2"
             entanglement_function="entanglement_spin_setting" measurement_function="measurement_spin_collapsing"
             spooky_action_function="spooky_action_spin_resetting" post_sim_explenation="post_sim2_explenation"
@@ -431,7 +466,7 @@ So we added a hidden variable that will make the collapsing determinstic based o
 
         <div id="resultDiv2" class="alert alert-info"></div>
 
-        <div id="after_sim_2" style="display: none;">
+        <div id="after_sim_2" style="display: block;">
 
 
             <button id="performExperiment3" class="btn btn-primary mb-4 perform-experiment-button"
@@ -445,7 +480,7 @@ So we added a hidden variable that will make the collapsing determinstic based o
             <div id="resultDiv3" class="alert alert-info"></div>
 
 
-            <div id="after_sim_3" style="display: none;">
+            <div id="after_sim_3" style="display: block;">
 
 
             <a id="playgroundAnchor"></a>

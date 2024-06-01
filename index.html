@@ -3,12 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .main-link {
+            font-size: 24px; /* Larger font size for emphasis */
+            font-weight: bold; /* Make it bold */
+            padding-bottom: 20px; /* Spacing below the main link */
+        }
+        .old-links {
+            opacity: 0.6; /* Make the old links less prominent */
+            font-size: 18px; /* Smaller font size */
+            padding-top: 10px; /* Spacing above the old section */
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            padding-bottom: 10px; /* Spacing below the section title */
+        }
+    </style>
 </head>
-<body class="container">
-
-    <a href="Sim1.html" >Sim 1</a><br/>   
-    <a href="Sim2.html" >Sim 2</a><br/>   
-    <a href="Sim3.html" >Sim 3</a><br/>   
-    
+<body class="container mt-5">
+    <div>
+        <a href="Sim2.html" class="main-link">Bell Hypo 101</a> <!-- Main link -->
+    </div>
+    <div class="old-links">
+        <div class="section-title">Old versions</div> <!-- Title for the old section -->
+        <a href="Sim1.html">Sim 1</a><br/>
+        <a href="Sim3.html">Sim 3</a>
+    </div>
 </body>
 </html>
