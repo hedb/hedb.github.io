@@ -70,6 +70,21 @@
     </style>
 
     <script>
+
+        function assert(condition, message) {
+            if (!condition) {
+                alert(message || "Assertion failed");
+                throw new Error(message || "Assertion failed");
+            }
+        }
+        function assert_equal(val1, val2, message) {
+            if (val1 !== val2) {
+                alert(message + "  :  " + val1 + '!=' + val2);
+                throw new Error(message + "  :  " + val1 + '!=' + val2);
+            }
+        }
+
+
         function init_page() {
             var buttons = document.querySelectorAll('.perform-experiment-button');
             buttons.forEach(function (button) {
@@ -99,6 +114,24 @@
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
+                
+        assert(getRandomInt(1, 10) >= 1, 'getRandomInt should return a number greater than or equal to 1');
+        assert(getRandomInt(1, 10) <= 10, 'getRandomInt should return a number less than or equal to 10');
+
+        function angle_diff_f(angle1, angle2) {            
+            diff1 = Math.abs(angle1 - angle2) % (2 * Math.PI);
+            diff2 = Math.abs(angle1 - (angle2 + 2 * Math.PI)) % (2 * Math.PI); 
+            return Math.min(diff1, diff2);
+        }
+
+        assert_equal(angle_diff_f(0, 0), 0, 'angle_diff_f(0, 0) should return 0');
+        assert_equal(angle_diff_f(0, Math.PI), Math.PI, 'angle_diff_f(0, Math.PI) should return PI');
+        assert_equal(angle_diff_f(Math.PI, 0), Math.PI, 'angle_diff_f(Math.PI, 0) should return PI');
+        assert_equal(angle_diff_f(0, Math.PI / 2), Math.PI / 2, 'angle_diff_f(0, PI/2) should return PI/2');
+        assert_equal(angle_diff_f(Math.PI / 2, 0), Math.PI / 2, 'angle_diff_f(PI/2, 0) should return PI/2');
+        assert_equal(angle_diff_f(Math.PI / 2, Math.PI), Math.PI / 2, 'angle_diff_f(PI/2, PI) should return PI/2');
+        assert_equal(angle_diff_f(Math.PI / 2, 3 * Math.PI), Math.PI / 2, 'angle_diff_f(PI/2, 3*PI) should return PI/2');
+
 
 
 
@@ -122,6 +155,10 @@
                 const preElement = document.createElement('pre');
 
                 preElement.textContent = functionText; // Set the function text inside the <pre> element
+                if (attr === 'measurement') {
+                    preElement.style.maxHeight = '1000px';
+                }
+                
                 functionDiv.innerHTML = `<strong>${attr.replace(/_/g, ' ')}:</strong>`;
                 functionDiv.appendChild(preElement); // Append the <pre> element to the div
 
@@ -187,6 +224,11 @@
 
 
         function run_sim(e) {
+
+            if (document.getElementById('breakpoint_in_run_sim').checked) {
+                debugger;
+            }
+            
             const N = 100000;
             let sum_alligned = 0;
             let sum_alligned_on_the_same_axis = 0;
@@ -215,30 +257,39 @@
     <script>
 
         function entanglement_spin_setting() {
+            // returns an array of 2 particles. particle is a dict with 'spin' property
+
+            // The spin is a definition of a probabilty function that will influence the collapsing when measured
             const particle1 = { 'spin': Math.random() * 2 * Math.PI };
             const particle2 = { 'spin': (particle1['spin'] + Math.PI) % (2 * Math.PI) };
             return [particle1, particle2];
         }
 
         function entanglement_spin_and_hidden_variable_setting() {
+            // returns an array of 2 particles. particle is a dict with 'spin' property
+
+
+            // The spin is a determinstic hidden variable that will define the collapsing when measured
             const particle1 = { 'spin': Math.random() * 2 * Math.PI , 'hidden_variable': 'Collapse_Determinsticly' };
             const particle2 = { 'spin': (particle1['spin'] + Math.PI) % (2 * Math.PI) ,'hidden_variable': 'Collapse_Determinsticly' };
             return [particle1, particle2];
         }
 
         function measurement_spin_collapsing(particle) {
+            //
             measurementUsed = getRandomInt(0, 2) * (2 * Math.PI / 3);
-            const angleDiff = particle['spin'] - measurementUsed;
+            const angleDiff = angle_diff_f(particle['spin'],measurementUsed);
             const probabailty_Up = Math.cos(angleDiff / 2) ** 2;
             const isUp = Math.random() < probabailty_Up;
+            // particle spin collapses to be the exact measurement used
             particle['spin'] = isUp ? measurementUsed : (measurementUsed + Math.PI) % (2 * Math.PI);
             return [measurementUsed, isUp];
         }
 
         function measurement_spin_collapsing_according_to_hidden_variable(particle) {
-            measurementUsed = getRandomInt(0, 2) * (2 * Math.PI / 3);            
-            angleDiff = Math.abs(particle['spin'] - measurementUsed);
-            angleDiff = Math.min(angleDiff, 2 * Math.PI - angleDiff);
+            //
+            measurementUsed = getRandomInt(0, 2) * (2 * Math.PI / 3);  
+            const angleDiff = angle_diff_f(particle['spin'],measurementUsed);
             // Determenistcly collapses in the direction of the measurement
             const isUp = Math.abs(angleDiff) < Math.PI/2;
             return [measurementUsed, isUp];
@@ -246,11 +297,13 @@
         }
 
         function spooky_action_none(entangledParticles) {
+            //
             // Do nothing
         }
 
         function spooky_action_spin_resetting(entangledParticles) {
-            // If Alice's particle is measured as up, Bob's particle will be measured as down and vice versa
+            //
+            // Once of the particles has been measured, the other collapses to be the opposite side
             entangledParticles[1]['spin'] = (entangledParticles[0]['spin'] + Math.PI) % (2 * Math.PI);
         }
 
@@ -297,9 +350,18 @@
             const spookyActionFunctionCode = window[spookyActionFunctionName] ? getFunctionBody(window[spookyActionFunctionName]) : '';
 
             // Find the textareas and fill them
-            document.getElementById('entanglementTextarea').value = entanglementFunctionCode;
-            document.getElementById('measurementTextarea').value = measurementFunctionCode;
-            document.getElementById('spookyActionTextarea').value = spookyActionFunctionCode;
+            const entanglementTextarea = document.getElementById('entanglementTextarea');
+            entanglementTextarea.value = entanglementFunctionCode;
+            entanglementTextarea.rows = entanglementFunctionCode.split('\n').length;
+
+            const measurementTextarea = document.getElementById('measurementTextarea');
+            measurementTextarea.value = measurementFunctionCode;
+            measurementTextarea.rows = measurementFunctionCode.split('\n').length;
+
+            const spookyActionTextarea = document.getElementById('spookyActionTextarea');
+            spookyActionTextarea.value = spookyActionFunctionCode;
+            spookyActionTextarea.rows = spookyActionFunctionCode.split('\n').length;
+        
         }
 
 
@@ -421,9 +483,51 @@ So we added a hidden variable that will make the collapsing determinstic based o
         </div>
     </div>
 
+    <div class="explanation-text">
 
     <p class="explanation-text">
-        Let's start with the simplest option.
+        We will measure two metrics:
+    <ul  class="explanation-text">
+        <li><b>Alligned % : </b>The number of times the particles are measured to be aligned. (Both spins are up or both
+            spins are down)</li>
+        <li><b>Entanglement flakiness:</b> The number of times the particles are measured to be aligned <b>when they are
+                measured on the same axis.</b></li>
+    </ul>
+    </p>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+
+    <p class="explanation-text">
+        Let's start with the super-position option.
+
+
+        <div id="after_sim_1" style="display: block;">
+            <button id="performExperiment2" class="btn btn-primary mb-4 perform-experiment-button" result_div="resultDiv2"
+                entanglement_function="entanglement_spin_setting" measurement_function="measurement_spin_collapsing"
+                spooky_action_function="spooky_action_spin_resetting" post_sim_explenation="post_sim2_explenation"
+                post_sim_func="post_sim2_func"> Run super-position Simulation 2</button>
+        </div>
+    </p>    
+
+    <div id="resultDiv2" class="alert alert-info"></div>
+
+    <div id="after_sim_2" style="display: block;">
+
 
     <ul>
         <li><b>Entanglement:</b> will just set the particle spins to be opposite on a random axis.</li>
@@ -433,16 +537,6 @@ So we added a hidden variable that will make the collapsing determinstic based o
         <li><b>Spooky action:</b> Let's see if we can do without it.</li>
     </ul>
 
-    </p>
-
-    <p class="explanation-text">
-        We will measure two metrics:
-    <ul>
-        <li><b>Alligned % : </b>The number of times the particles are measured to be aligned. (Both spins are up or both
-            spins are down)</li>
-        <li><b>Entanglement flakiness:</b> The number of times the particles are measured to be aligned <b>when they are
-                measured on the same axis.</b></li>
-    </ul>
     </p>
 
     <script>
@@ -457,16 +551,6 @@ So we added a hidden variable that will make the collapsing determinstic based o
     <div id="resultDiv1" class="alert alert-info"></div>
 
 
-    <div id="after_sim_1" style="display: block;">
-        <button id="performExperiment2" class="btn btn-primary mb-4 perform-experiment-button" result_div="resultDiv2"
-            entanglement_function="entanglement_spin_setting" measurement_function="measurement_spin_collapsing"
-            spooky_action_function="spooky_action_spin_resetting" post_sim_explenation="post_sim2_explenation"
-            post_sim_func="post_sim2_func"> Run Simulation 2</button>
-
-
-        <div id="resultDiv2" class="alert alert-info"></div>
-
-        <div id="after_sim_2" style="display: block;">
 
 
             <button id="performExperiment3" class="btn btn-primary mb-4 perform-experiment-button"
@@ -485,41 +569,133 @@ So we added a hidden variable that will make the collapsing determinstic based o
 
             <a id="playgroundAnchor"></a>
             <div class="separator"></div>
-    
+
+     -->
             <h1>PLAYGROUND</h1>
 
 
             
- <button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
- entanglement_function="entanglement_spin_setting"
-measurement_function="measurement_spin_collapsing" 
-spooky_action_function="spooky_action_none"
-> Start playing from Simulation 1 state</button>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Playground Scenario</th>
+                        <th scope="col">What do we expect to see / actually see </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
+                            entanglement_function="entanglement_spin_setting"
+                            measurement_function="measurement_spin_collapsing" 
+                            spooky_action_function="spooky_action_spin_resetting">
+                             Start playing from super position 
+                            </button>
+                        
+                        </td>
+                        <td>
 
 
-
-<button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
-entanglement_function="entanglement_spin_setting"
-measurement_function="measurement_spin_collapsing" 
-spooky_action_function="spooky_action_spin_resetting"
-> Start playing from Simulation 2 state</button>
-
-
+<div class="explanation-text">
+      <ul>
+          <li>50% allignment in general<br/>
+          </li>
+          <li>0% allignment when the particles are measured on the same axis</li>
+</div>
 
 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
 
  <button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
  entanglement_function="entanglement_spin_and_hidden_variable_setting"
 measurement_function="measurement_spin_collapsing_according_to_hidden_variable" 
 spooky_action_function="spooky_action_none"
-> Start playing from Simulation 3 state</button>
+> Hidden variable + determinstic collapse</button>
+
+                        </td>
+                        <td>
+                            <div class="explanation-text">
+                                <ul>
+                                    <li>44% allignment in general<br/>
+                                    </li>
+                                    <li>0% allignment when the particles are measured on the same axis</li>
+                          </div>
+                          
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+
+                            <button id="playground_fill_experiment3_value" class="btn btn-primary mb-4 playground-fill-button"
+                            entanglement_function="entanglement_spin_setting"
+                            measurement_function="measurement_spin_collapsing" 
+                            spooky_action_function="spooky_action_none"
+                            > Hidden variable + probabilstic collapse</button>
+                            
+                        </td>
+                        <td>
+                            <div class="explanation-text">
+                                <ul>
+                                    <li>50% allignment in general<br/>
+                                    </li>
+                                    <li>25% allignment when the particles are measured on the same axis</li>
+                          </div>
+                          
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+
+
+
+
+
+<br/>
+
+
+
+<br/>
+<table>
+    <tr>
+        <td>
+            <div>
+                <button id="performExperiment4" class="btn btn-primary mb-4 perform-experiment-button"
+                    result_div="resultDiv4"
+                    custom_pre_sim_function="extract_ad_hoc_functions_from_textarea"
+                    entanglement_function="entanglement_ad_hoc"
+                    measurement_function="measurement_ad_hoc" 
+                    spooky_action_function="spooky_action_ad_hoc"
+                    avoid_printing_functions="true" 
+                    post_sim_explenation=""
+                    post_sim_func=""
+                    style="background-color: green; color: white;"> 
+                    Run Playground
+                </button>
+                </button>
+            </div>
+        </td>
+        <td style="width: 30px;">
+        </td>
+        <td>
+            <div>
+                <input type="checkbox" id="breakpoint_in_run_sim">
+                <label for="myCheckbox">Pause in Debugger</label>
+            </div>
+        </td>
+    </tr>
+</table>
 
 
 
                 <div style="width: 100%;">
                     <h4>Entanglement Function</h4>
                     <div class="code-section">
-                        <div>function entanglement() { // return an array of 2 particles. particle is a dict with 'spin' property</div>
+                        <div>function entanglement() { </div>
                         <textarea id="entanglementTextarea" rows="5" style="width: 100%;"></textarea>
                         <div>}</div>
                     </div>
@@ -540,15 +716,6 @@ spooky_action_function="spooky_action_none"
                   </div>
                                   
 
-                <button id="performExperiment4" class="btn btn-primary mb-4 perform-experiment-button"
-                    result_div="resultDiv4"
-                    custom_pre_sim_function="extract_ad_hoc_functions_from_textarea"
-                    entanglement_function="entanglement_ad_hoc"
-                    measurement_function="measurement_ad_hoc" 
-                    spooky_action_function="spooky_action_ad_hoc"
-                    avoid_printing_functions = "true" 
-                    post_sim_explenation="" post_sim_func=""> 
-                    Run Playground</button>
     
     
                 <div id="resultDiv4" class="alert alert-info"></div>
